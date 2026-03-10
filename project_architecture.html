@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDAC Portal - Technical Architecture Master Report</title>
+    <!-- Mermaid.js for Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true, theme: 'forest' });</script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=JetBrains+Mono&display=swap');
+
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #334155;
+            --text-bold: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 280px;
+            height: 100vh;
+            background: var(--primary);
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 2rem 1rem;
+            color: white;
+            overflow-y: auto;
+            z-index: 100;
+        }
+        .sidebar h2 { font-size: 1.2rem; margin-bottom: 2rem; color: var(--accent); }
+        .sidebar-link {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .sidebar-link:hover { background: #1e293b; color: white; }
+        .sidebar-link.active { background: var(--accent); color: white; }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 3rem;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 4rem 2rem;
+            border-radius: 1.5rem;
+            color: white;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        .header-section h1 { font-size: 3rem; font-weight: 700; margin-bottom: 1rem; }
+        .header-section p { font-size: 1.2rem; opacity: 0.8; }
+
+        section {
+            background: var(--bg-card);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        h2.section-title {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--text-bold);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        h2.section-title::after {
+            content: '';
+            flex-grow: 1;
+            height: 2px;
+            background: #e2e8f0;
+        }
+
+        /* API Table */
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+        .api-table th { background: #f8fafc; padding: 1rem; text-align: left; font-size: 0.9rem; font-weight: 600; }
+        .api-table td { padding: 1rem; border-top: 1px solid #e2e8f0; font-size: 0.85rem; }
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+        .btn-get { background: #dcfce7; color: #166534; }
+        .btn-post { background: #dbeafe; color: #1e40af; }
+        .btn-put { background: #fef3c7; color: #92400e; }
+        .btn-delete { background: #fee2e2; color: #991b1b; }
+
+        /* Diagram Containers */
+        .diagram-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        /* Architecture Layers Card */
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .layer-card {
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s;
+        }
+        .layer-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+        .layer-card h3 { color: var(--accent); margin-bottom: 1rem; }
+
+        /* Security List */
+        .security-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 3rem;
+            align-items: center;
+        }
+        .security-list { list-style: none; }
+        .security-list li {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--success);
+        }
+
+        .workflow-step {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            align-items: flex-start;
+        }
+        .step-number {
+            background: var(--accent);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        .card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+        .card:hover { transform: translateY(-3px); border-color: var(--danger); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+
+        @media (max-width: 1024px) {
+            .sidebar { transform: translateX(-100%); transition: 0.3s; }
+            .main-content { margin-left: 0; padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="sidebar">
+        <h2>CDAC PORTAL</h2>
+        <a href="#overview" class="sidebar-link active">1. System Overview</a>
+        <a href="#layers" class="sidebar-link">2. Architecture Layers</a>
+        <a href="#workflow" class="sidebar-link">3. End-to-End Workflow</a>
+        <a href="#qr-mechanism" class="sidebar-link">4. QR Attendance Mechanism</a>
+        <a href="#biometrics" class="sidebar-link">5. Biometric Authentication</a>
+        <a href="#bulk-management" class="sidebar-link">6. Bulk Data Management</a>
+        <a href="#leave-system" class="sidebar-link">7. Leave Management System</a>
+        <a href="#database" class="sidebar-link">8. Database (ERD)</a>
+        <a href="#security-interaction" class="sidebar-link">9. Security Flow (UML)</a>
+        <a href="#jwt-lifecycle" class="sidebar-link">10. JWT Lifecycle & Security</a>
+        <a href="#apis" class="sidebar-link">11. Full API Catalog</a>
+        <a href="#optimization" class="sidebar-link">12. Development Optimization</a>
+        <a href="#challenges" class="sidebar-link">13. Development Challenges</a>
+        <a href="#features" class="sidebar-link">14. Feature Workflows</a>
+    </nav>
+
+    <div class="main-content">
+        <header class="header-section" id="overview">
+            <h1>Technical Master Report</h1>
+            <p>Complete Architecture, Detailed Entities, UML Models, and Global API Specification</p>
+        </header>
+
+        <section id="layers">
+            <h2 class="section-title">02. Distributed System Layers</h2>
+            <div class="architecture-grid">
+                <div class="layer-card">
+                    <h3>Frontend Stack</h3>
+                    <ul>
+                        <li><strong>View Tier:</strong> React 18, Tailwind CSS</li>
+                        <li><strong>Component Tier:</strong> ShadCN UI, Lucide Icons</li>
+                        <li><strong>State Tier:</strong> Context API (Auth, Theme)</li>
+                        <li><strong>Service Tier:</strong> Axios Interceptors (JWT Injection)</li>
+                    </ul>
+                </div>
+                <div class="layer-card">
+                    <h3>Backend Stack</h3>
+                    <ul>
+                        <li><strong>API Tier:</strong> Spring Web Controllers</li>
+                        <li><strong>Logic Tier:</strong> Spring Services (@Transactional)</li>
+                        <li><strong>Data Tier:</strong> Spring Data JPA</li>
+                        <li><strong>Security Tier:</strong> Spring Security + FIDO2/WebAuthn</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="workflow">
+            <h2 class="section-title">03. End-to-End Application Workflow</h2>
+            <p>This diagram demonstrates how a single user action (e.g., Mark Attendance) flows from the UI through every layer of the technology stack.</p>
+            
+            <div class="diagram-box">
+                <div class="mermaid">
+                    graph TD
+                        subgraph Frontend ["Frontend (React Client)"]
+                            UI[User Interface - Dashboard] -->|User Interaction| API_CALL[API Service Call]
+                            API_CALL -->|Axios Interceptor| JWT_HEADER[Add JWT Bearer Token]
+                        end
+
+                        subgraph Network ["Network Layer"]
+                            JWT_HEADER -->|HTTP Request| REST_API[REST API Protocol]
+                        end
+
+                        subgraph Backend ["Backend (Spring Boot)"]
+                            REST_API -->|Interceptor| SEC_FILTER[Spring Security Filter Chain]
+                            SEC_FILTER -->|Authenticate JWT| JWT_VAL[JWT Validator]
+                            JWT_VAL -->|Authorize Role| CONTROLLER[Rest Controller]
+                            CONTROLLER -->|Transform To Request| SERVICE[Business Service Layer]
+                            SERVICE -->|Business Logic / Transact| REPOSITORY[JPA Repository]
+                        end
+
+                        subgraph Data ["Data Layer"]
+                            REPOSITORY -->|SQL Query| DB[(MySQL Database)]
+                            DB -->|Result Set| REPOSITORY
+                        end
+
+                        subgraph Response ["Response Lifecycle"]
+                            REPOSITORY -->|Entity| SERVICE
+                            SERVICE -->|DTO Mapping| CONTROLLER
+                            CONTROLLER -->|JSON Response| REST_API
+                            REST_API -->|Success Handler| UI
+                        end
+
+                        style Frontend fill:#dbeafe,stroke:#3b82f6
+                        style Backend fill:#fef3c7,stroke:#f59e0b
+                        style Data fill:#dcfce7,stroke:#10b981
+                        style Network fill:#f1f5f9,stroke:#94a3b8
+                </div>
+            </div>
+
+            <div class="architecture-grid">
+                <div class="layer-card">
+                    <div class="workflow-step">
+                        <div class="step-number">1</div>
+                        <div>
+                            <h4>Frontend Event</h4>
+                            <p>Student clicks "Mark Attendance". React state captures Geolocation and QR Token.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">2</div>
+                        <div>
+                            <h4>Axios Interceptor</h4>
+                            <p>Custom interceptor fetches JWT from LocalStorage and injects it into <code>Authorization: Bearer ...</code> header.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="layer-card">
+                    <div class="workflow-step">
+                        <div class="step-number">3</div>
+                        <div>
+                            <h4>Security Gate (Backend)</h4>
+                            <p>Spring Security intercepts the request, validates the JWT signature, and checks if the student has 'ROLE_STUDENT'.</p>
+                        </div>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="step-number">4</div>
+                        <div>
+                            <h4>Business Logic (JPA)</h4>
+                            <p>Service validates Geofence coords. Repository performs an Atomic transaction to update DB and returns a secure DTO.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="qr-mechanism">
+            <h2 class="section-title">04. QR Attendance Mechanism</h2>
+            <p>The system uses a dynamic, time-sensitive QR code system to prevent "proxy attendance" and ensure students are physically scanning the code in real-time.</p>
+            
+            <div class="architecture-grid">
+                <div class="layer-card">
+                    <h4>1. Token Generation (Backend)</h4>
+                    <p>When a faculty member requests a session, the <code>FacultyService</code> performs the following:</p>
+                    <ul>
+                        <li>Generates a cryptographically strong <strong>UUID v4</strong> token.</li>
+                        <li>Associates the token with a specific <code>Subject</code> and <code>Faculty</code> in the <code>QrSession</code> entity.</li>
+                        <li>Sets an <code>expiresAt</code> timestamp based on the requested duration (default 10-60 mins).</li>
+                    </ul>
+                </div>
+                <div class="layer-card">
+                    <h4>2. QR Rendering (Frontend)</h4>
+                    <p>The <code>FacultyDashboard.jsx</code> receives the token and uses the <code>react-qr-code</code> library to render it:</p>
+                    <ul>
+                        <li>The QR payload is exactly the UUID string.</li>
+                        <li>The dashboard displays a countdown/expiry time to the faculty.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="diagram-box">
+                <div class="mermaid">
+                    sequenceDiagram
+                        participant Faculty as Faculty UI
+                        participant Backend as Spring Boot
+                        participant DB as MySQL
+                        participant Student as Student UI
+
+                        Faculty->>Backend: POST /api/faculty/qr/generate (subjectId, duration)
+                        Backend->>Backend: Generate UUID Token
+                        Backend->>DB: Save QrSession (token, expiresAt)
+                        Backend-->>Faculty: Return Session Object (Token)
+                        Faculty->>Faculty: Render QR Code (react-qr-code)
+                        
+                        Note over Student, Faculty: Student Scans the Physical/Shared Screen
+                        
+                        Student->>Student: Decode QR -> Extract Token
+                        Student->>Backend: POST /api/webauthn/auth/finish (token, biometricPayload)
+                        Backend->>DB: Check if Token exists & NOT expired
+                        alt Valid & Active
+                            Backend->>DB: Record Attendance
+                            Backend-->>Student: Attendance SUCCESS
+                        else Expired/Invalid
+                            Backend-->>Student: Error: SESSION_EXPIRED
+                        end
+                </div>
+            </div>
+        </section>
+
+        <section id="biometrics">
+            <h2 class="section-title">05. Biometric Implementation: The Definitive Guide</h2>
+            <p>A common misconception is that the server stores actual fingerprints. This section clarifies our <strong>Privacy-First Architecture</strong> using the WebAuthn (FIDO2) standard.</p>
+
+            <div class="architecture-grid">
+                <div class="layer-card" style="border-left: 5px solid var(--success);">
+                    <h4>What is NOT Stored?</h4>
+                    <p style="color: var(--danger); font-weight: bold;">❌ Fingerprint Images<br>❌ Biometric Templates<br>❌ FaceID Data</p>
+                    <p>The actual biometric data never leaves the student's hardware (Secure Enclave/TPM). The server has zero access to the physical fingerprint sensor.</p>
+                </div>
+                <div class="layer-card" style="border-left: 5px solid var(--accent);">
+                    <h4>What IS Stored?</h4>
+                    <p>In our <code>user_authenticators</code> table, we only store <strong>Public Cryptographic Metadata</strong>:</p>
+                    <ul>
+                        <li><strong>Credential ID:</strong> A unique identifier for the hardware key.</li>
+                        <li><strong>Public Key:</strong> A COSE-encoded string used to verify signatures.</li>
+                        <li><strong>Sign Count:</strong> A counter to prevent "Replay Attacks".</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="diagram-box">
+                <h3 style="margin-bottom: 1.5rem;">The FIDO2 Cryptographic Handshake</h3>
+                <div class="mermaid">
+                    sequenceDiagram
+                        autonumber
+                        participant UI as React Frontend
+                        participant HSM as Device Secure Hardware
+                        participant API as Spring Boot (WebAuthnService)
+                        participant DB as MySQL Database
+
+                        Note over UI, API: Phase 1: Registration (The Enrollment)
+                        UI->>API: 1. Request Challenge (/register/start)
+                        API-->>UI: 2. Random 32-byte Challenge
+                        UI->>HSM: 3. navigator.credentials.create()
+                        Note right of HSM: Hardware prompts for Fingerprint
+                        HSM-->>UI: 4. Signed Attestation (Public Key)
+                        UI->>API: 5. Finalize (/register/finish)
+                        API->>API: 6. Validate Signature + Challenge
+                        API->>DB: 7. Save PUBLIC_KEY + CRED_ID
+
+                        Note over UI, API: Phase 2: Authentication (The Scan)
+                        UI->>API: 8. Request Auth Challenge (/auth/start)
+                        API-->>UI: 9. New Random Challenge
+                        UI->>HSM: 10. navigator.credentials.get()
+                        Note right of HSM: Hardware prompts for Fingerprint
+                        HSM-->>UI: 11. Cryptographic Signature
+                        UI->>API: 12. Submit Signature + QR Token + GPS
+                        API->>DB: 13. Fetch Stored PUBLIC_KEY
+                        API->>API: 14. Verify Signature (PubKey vs Signature)
+                        API->>DB: 15. Record "Present" in Attendance Table
+                </div>
+            </div>
+
+            <div class="layer-card" style="margin-top: 2rem;">
+                <h4>Step-by-Step Implementation Guide</h4>
+                <div class="workflow-step">
+                    <div class="step-number">1</div>
+                    <div>
+                        <strong>Frontend (React):</strong> Uses <code>WebAuthnService.js</code> to interact with the browser's <code>navigator.credentials</code> API. It handles the conversion of Base64 strings to ArrayBuffers required by the hardware.
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">2</div>
+                    <div>
+                        <strong>Backend (Java):</strong> Utilizes the <code>webauthn4j-core</code> library. The <code>WebAuthnService.java</code> acts as a coordinator, managing in-memory challenges and verifying the validity of attestation objects sent by the client.
+                    </div>
+                </div>
+                <div class="workflow-step">
+                    <div class="step-number">3</div>
+                    <div>
+                        <strong>Security (Validation):</strong> During every attendance mark, the backend checks:
+                        <ul>
+                            <li>Is the signature valid for the stored Public Key?</li>
+                            <li>Has the <code>sign_count</code> increased? (Prevents cloned devices)</li>
+                            <li>Is the Geolocation within the allowed radius?</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="bulk-management">
+            <h2 class="section-title">06. Bulk Data Management (Excel Processing)</h2>
+            <p>To handle large batches of students and academic results, the system implements a robust <strong>Apache POI</strong> based Excel parser in the <code>AdminService</code>.</p>
+
+            <div class="architecture-grid">
+                <div class="layer-card">
+                    <h4>1. Bulk Student Registration</h4>
+                    <p>Allows admins to onboard entire batches instantly. The system auto-generates credentials based on PRN.</p>
+                    <table class="api-table" style="font-size: 0.75rem;">
+                        <thead>
+                            <tr><th>Column</th><th>Field</th><th>Requirement</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>A</td><td>PRN (Enrollment No)</td><td><strong>Required</strong> (used as ID & Pwd)</td></tr>
+                            <tr><td>B</td><td>Full Name</td><td><strong>Required</strong></td></tr>
+                            <tr><td>C</td><td>Course Name</td><td>Optional (Defaults to PG-DAC)</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 1rem; font-size: 0.8rem; font-style: italic;">Note: Auto-generates email as <code>{PRN}@temp.cdac.in</code></p>
+                </div>
+                <div class="layer-card">
+                    <h4>2. Bulk Academic Data</h4>
+                    <p>Upload student marks for multiple subjects. The parser uses <strong>Fuzzy Header Mapping</strong> to identification.</p>
+                    <table class="api-table" style="font-size: 0.75rem;">
+                        <thead>
+                            <tr><th>Column</th><th>Field</th><th>Requirement</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>A</td><td>PRN (Enrollment No)</td><td><strong>Required</strong></td></tr>
+                            <tr><td>B-J</td><td>Subject Marks</td><td>Optional (0-40)</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 1rem; font-size: 0.8rem; font-style: italic;">Note: Auto-calculates Total (360), Percentage, and Status (Pass if >= 50%).</p>
+                </div>
+            </div>
+
+            <div class="diagram-box">
+                <h3 style="margin-bottom: 1.5rem;">Excel Processing Sequence</h3>
+                <div class="mermaid">
+                    sequenceDiagram
+                        participant Admin as Admin Dashboard
+                        participant Auth as Auth Interceptor
+                        participant Controller as AdminController
+                        participant Service as AdminService
+                        participant POI as Apache POI
+                        participant DB as MySQL
+
+                        Admin->>Auth: Upload file.xlsx (Multipart)
+                        Auth->>Controller: Forward to /bulk-upload
+                        Controller->>Service: parseExcelFile(InputStream)
+                        Service->>POI: Load Workbook (XSSF)
+                        POI-->>Service: Row Iterator
+                        loop For Each Row
+                            Service->>Service: Validate Marks (0-40)
+                            Service->>Service: Generate Temp Email
+                            Service->>DB: Check if PRN exists
+                            Service->>DB: save(User + Details)
+                        end
+                        Service-->>Admin: BulkUploadResponse (Success/Fail Counts)
+                </div>
+            </div>
+        </section>
+
+        <section id="leave-system">
+            <h2 class="section-title">07. Leave Management System</h2>
+            <p>The portal includes a formalized digital workflow for students to apply for leaves and for administrators to track and approve them.</p>
+
+            <div class="architecture-grid">
+                <div class="layer-card">
+                    <h4>1. Student Application</h4>
+                    <p>Students use a dedicated form to submit leave requests. The request is persisted in the <code>leave_requests</code> table with an initial status of <strong>PENDING</strong>.</p>
+                    <ul>
+                        <li><strong>Inputs:</strong> Reason, Start Date, and End Date.</li>
+                        <li><strong>Validation:</strong> Dates are verified to ensure end-date is not before start-date.</li>
+                    </ul>
+                </div>
+                <div class="layer-card">
+                    <h4>2. Admin Approval Loop</h4>
+                    <p>Administrators see all pending requests in a global inbox. They have the authority to override the status.</p>
+                    <ul>
+                        <li><strong>APPROVED:</strong> Leave is granted; recorded in student logs.</li>
+                        <li><strong>REJECTED:</strong> Application is denied; reason can be viewed.</li>
+                        <li><strong>Atomic Update:</strong> Status changes are handled via a single <code>@Transactional</code> method in <code>AdminService.java</code>.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="diagram-box">
+                <h3 style="margin-bottom: 1.5rem;">Leave Lifecycle & Data Flow</h3>
+                <div class="mermaid">
+                    sequenceDiagram
+                        autonumber
+                        participant S as Student Dashboard
+                        participant API as Spring Boot API
+                        participant DB as MySQL Database
+                        participant A as Admin Inbox
+
+                        S->>API: POST /api/student/leave/apply
+                        API->>DB: INSERT INTO leave_requests (Status=PENDING)
+                        Note over DB: Record stays PENDING until admin action
+                        A->>API: GET /api/admin/leaves (View All)
+                        API-->>A: List of Pending Requests
+                        A->>API: PUT /api/admin/leaves/{id} (APPROVED/REJECTED)
+                        API->>DB: UPDATE Status = "APPROVED"
+                        DB-->>API: Persist Change
+                        API-->>A: Refresh Status
+                        S->>API: GET /api/student/leave/my
+                        API-->>S: View Updated Status
+                </div>
+            </div>
+        </section>
+
+        <section id="database">
+            <h2 class="section-title">08. Database Schema (ERD)</h2>
+            <p>Our relational schema is optimized for tracking complex relationships between users, sessions, and academic records.</p>
+            <div class="diagram-box">
+                <div class="mermaid">
+                    erDiagram
+                        USER ||--|| STUDENT_DETAILS : "Maps-Id"
+                        USER ||--|| FACULTY_DETAILS : "Maps-Id"
+                        USER ||--o{ ATTENDANCE : "Student"
+                        USER ||--o{ LEAVE_REQUEST : "Student"
+                        USER ||--o{ QR_SESSION : "Faculty"
+                        USER ||--o{ USER_AUTHENTICATOR : "Biometrics"
+                        ROLE ||--o{ USER : "Grants Permissions"
+                        SUBJECT ||--o{ QR_SESSION : "Subject Code"
+                        QR_SESSION ||--o{ ATTENDANCE : "Session Logs"
+                        USER ||--o{ ACADEMIC_RECORD : "Student Profile"
+                        
+                        USER {
+                            long id PK
+                            string fullName
+                            string email
+                            string phone
+                            string password
+                            boolean active
+                        }
+                        QR_SESSION {
+                            long id PK
+                            string token
+                            string expiresAt
+                        }
+                        ATTENDANCE {
+                            long id PK
+                            string markedAt
+                            string status
+                        }
+                </div>
+            </div>
+        </section>
+
+        <section id="security-interaction">
+            <h2 class="section-title">09. Interaction Models (UML)</h2>
+            <div class="security-grid">
+                <div>
+                    <h3>Secure Attendance Flow</h3>
+                    <p>This sequence demonstrates how multi-factor verification (QR + Geofence + Biometrics) works.</p>
+                </div>
+                <div class="diagram-box">
+                    <div class="mermaid">
+                        sequenceDiagram
+                            participant Student
+                            participant App
+                            participant Backend
+                            participant DB
+                            
+                            Student->>App: Scan QR Code
+                            App->>App: Capture GPS (Lat/Long)
+                            App->>Backend: Request Bio Option (Challenge)
+                            Backend->>App: Challenge String
+                            App->>Student: Request Fingerprint
+                            Student->>App: Authenticate
+                            App->>Backend: Submit (Bio Signature + GPS + Token)
+                            Backend->>Backend: Calculate Distance (Haversine)
+                            alt Valid Dist and Signature
+                                Backend->>DB: Save Attendance Record
+                                Backend->>App: Result SUCCESS
+                                App->>Student: View Present Badge
+                            else Failure
+                                Backend->>App: Error OUTSIDE_RADIUS
+                                App->>Student: Show Error Alert
+                            end
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="jwt-lifecycle">
+            <h2 class="section-title">10. JWT Lifecycle & Security Mechanism</h2>
+            <p>Detailed sequence of how the system handles authentication tokens from generation to validation.</p>
+            
+            <div class="diagram-box">
+                <div class="mermaid">
+                    sequenceDiagram
+                        box rgb(241, 245, 249) "Frontend (React)"
+                        participant UI as Login Page
+                        participant Store as LocalStorage/Context
+                        participant Axios as Axios Interceptor
+                        end
+                        
+                        box rgb(255, 255, 255) "Backend (Spring Boot)"
+                        participant Filter as AuthTokenFilter
+                        participant AuthManager as AuthenticationManager
+                        participant Utils as JwtUtils
+                        participant DB as MySQL DB
+                        end
+
+                        UI->>AuthManager: POST /api/auth/signin (email, password)
+                        AuthManager->>DB: Verify User Credentials
+                        AuthManager->>Utils: If Valid, Generate Token
+                        AuthManager-->>UI: Return JWT Token (with ID, Role, Name)
+                        UI->>Store: Store Token in Browser
+                        
+                        Note over UI, Store: Subsequent API Requests
+                        
+                        UI->>Axios: Call Protected API
+                        Axios->>Store: Get Token
+                        Axios->>Filter: Send Request with Header Bearer Token
+                        
+                        Filter->>Utils: Validate JWT Signature
+                        Utils-->>Filter: Valid Payload (User Claims)
+                        Filter->>Filter: Set SecurityContext (Authorized)
+                        Filter->>Backend: Forward to Business Controller
+                </div>
+            </div>
+
+            <div class="architecture-grid">
+                <div class="layer-card">
+                    <h4>1. Token Generation</h4>
+                    <p>The backend uses the <code>JwtUtils</code> class to create a signed string containing:</p>
+                    <ul>
+                        <li><strong>Subject:</strong> User Email</li>
+                        <li><strong>Claims:</strong> User ID, Role, and Full Name</li>
+                        <li><strong>Signature:</strong> HS256 algorithm with a private secret key</li>
+                    </ul>
+                </div>
+                <div class="layer-card">
+                    <h4>2. Frontend Persistence</h4>
+                    <p>The <code>AuthContext</code> stores the token across the application session. Every API call automatically retrieves this token using an <strong>Axios Interceptor</strong>.</p>
+                </div>
+                <div class="layer-card">
+                    <h4>3. Stateless Validation</h4>
+                    <p>Each request is independently verified by <code>AuthTokenFilter</code>. The server does NOT store sessions; it only trusts the token's cryptographic signature.</p>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="apis">
+            <h2 class="section-title">11. Full API Catalog</h2>
+            
+            <h3>1. Administrator Access (Role: ADMIN)</h3>
+            <table class="api-table">
+                <thead>
+                    <tr>
+                        <th>Endpoint</th>
+                        <th>Method</th>
+                        <th>Description</th>
+                        <th>Payload/Params</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>/api/admin/register</code></td>
+                        <td><span class="badge btn-post">POST</span></td>
+                        <td>Manual account creation</td>
+                        <td>SignupRequest (JSON)</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/admin/students</code></td>
+                        <td><span class="badge btn-get">GET</span></td>
+                        <td>Directory with Search/Pagination</td>
+                        <td>page, size, search</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/admin/faculty</code></td>
+                        <td><span class="badge btn-get">GET</span></td>
+                        <td>Directory with Search/Pagination</td>
+                        <td>page, size, search</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/admin/sessions</code></td>
+                        <td><span class="badge btn-get">GET</span></td>
+                        <td>List all active/expired sessions</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/admin/attendance/{id}</code></td>
+                        <td><span class="badge btn-get">GET</span></td>
+                        <td>Detailed logs for a session</td>
+                        <td>sessionId</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/admin/leaves</code></td>
+                        <td><span class="badge btn-get">GET</span></td>
+                        <td>Global leave application inbox</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/admin/users/{id}</code></td>
+                        <td><span class="badge btn-delete">DELETE</span></td>
+                        <td>Soft/Hard delete user + cleanup</td>
+                        <td>userId</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/admin/location</code></td>
+                        <td><span class="badge btn-put">PUT</span></td>
+                        <td>Update Campus Radius/Coords</td>
+                        <td>CollegeLocation Object</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/admin/students/bulk-upload</code></td>
+                        <td><span class="badge btn-post">POST</span></td>
+                        <td>Excel Batch Processing</td>
+                        <td>Multipart File (.xlsx)</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/admin/academic/scoreboard</code></td>
+                        <td><span class="badge btn-get">GET</span></td>
+                        <td>Unified marks view</td>
+                        <td>-</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 style="margin-top: 2rem;">2. WebAuthn / Biometrics (Role: ALL)</h3>
+            <table class="api-table">
+                <tbody>
+                    <tr>
+                        <td><code>/api/webauthn/register/start</code></td>
+                        <td><span class="badge btn-post">POST</span></td>
+                        <td>Generate FIDO2 Options</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/webauthn/register/finish</code></td>
+                        <td><span class="badge btn-post">POST</span></td>
+                        <td>Save Public Key Credential</td>
+                        <td>Credential Payload</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/webauthn/auth/finish</code></td>
+                        <td><span class="badge btn-post">POST</span></td>
+                        <td>Verify Bio + Mark Attendance</td>
+                        <td>BioPayload, GPS, Token</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3 style="margin-top: 2rem;">3. Faculty & Student Core</h3>
+            <table class="api-table">
+                <tbody>
+                    <tr>
+                        <td><code>/api/faculty/sessions/generate</code></td>
+                        <td><span class="badge btn-post">POST</span></td>
+                        <td>Create dynamic QR code</td>
+                        <td>SubjectId, Duration</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/student/academic-records</code></td>
+                        <td><span class="badge btn-get">GET</span></td>
+                        <td>Personal marksheet</td>
+                        <td>-</td>
+                    </tr>
+                    <tr>
+                        <td><code>/api/student/leave/apply</code></td>
+                        <td><span class="badge btn-post">POST</span></td>
+                        <td>Submit leave for approval</td>
+                        <td>Reason, DateRange</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <section id="optimization">
+            <h2 class="section-title">12. Development Phase Optimizations</h2>
+            <div class="architecture-grid">
+                <div class="layer-card">
+                    <h4>Frontend Performance</h4>
+                    <ul>
+                        <li><strong>Vite HMR:</strong> Leveraged Vite's Hot Module Replacement to reduce dev refresh cycles to sub-100ms.</li>
+                        <li><strong>Tailwind JIT:</strong> Used Just-In-Time compilation to ensure only utilized CSS classes are bundled, keeping the build size minimal.</li>
+                        <li><strong>Axios Interceptors:</strong> Centralized token management to avoid redundant auth logic in individual components.</li>
+                    </ul>
+                </div>
+                <div class="layer-card">
+                    <h4>Backend Efficiency</h4>
+                    <ul>
+                        <li><strong>Project Lombok:</strong> Eliminated thousands of lines of boilerplate setter/getter code using annotation-driven POJOs.</li>
+                        <li><strong>DTO Pattern:</strong> Implemented Data Transfer Objects to prevent over-fetching and ensure the database internal schema is never exposed to the client.</li>
+                        <li><strong>Stateless JWT:</strong> Optimized server resources by removing session persistence, allowing the backend to scale horizontally effortlessly.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="challenges">
+            <h2 class="section-title">13. Technical Challenges & Solutions</h2>
+            <div class="grid">
+                <div class="card">
+                    <h4 style="color: var(--danger);">1. Mixed-Content SSL Issues</h4>
+                    <p><strong>Challenge:</strong> Browsers block Geolocation and Biometric APIs on non-secure (HTTP) origins.</p>
+                    <p><strong>Solution:</strong> Configured a self-signed SSL certificate for Spring Boot and enabled HTTPS for Vite, ensuring a secure environment for FIDO2 and GPS APIs during development.</p>
+                </div>
+                <div class="card">
+                    <h4 style="color: var(--danger);">2. WebAuthn Complexity</h4>
+                    <p><strong>Challenge:</strong> The 2-step challenge/response handshake for fingerprints is difficult to coordinate between JS and Java.</p>
+                    <p><strong>Solution:</strong> Developed a custom state machine in <code>WebAuthnService.java</code> to manage cryptographic challenges and integrated <code>webauthn4j-core</code> for reliable signature verification.</p>
+                </div>
+                <div class="card">
+                    <h4 style="color: var(--danger);">3. GPS Precision & Geofencing</h4>
+                    <p><strong>Challenge:</strong> Mobile GPS data can be noisy, causing students to be marked "Outside Radius" even when on campus.</p>
+                    <p><strong>Solution:</strong> Implemented high-accuracy GPS tracking in React and added a configurable "Tolerance Radius" in the Admin controls to account for standard mobile GPS deviation (5-20 meters).</p>
+                </div>
+                <div class="card">
+                    <h4 style="color: var(--danger);">4. Synchronizing Refactored DTOs</h4>
+                    <p><strong>Challenge:</strong> Major refactoring of field names (e.g., <code>id</code> to <code>userId</code>) broke various sections of the UI.</p>
+                    <p><strong>Solution:</strong> Standardized the <code>UserDTO</code> and used systematic <code>grep</code> audits across the React codebase to ensure every dashboard component consumed the new naming convention consistently.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="features">
+            <h2 class="section-title">14. Feature Workflows</h2>
+            <div class="architecture-grid">
+                <div class="layer-card">
+                    <h4>Haversine Geofencing</h4>
+                    <pre style="background: #f1f5f9; padding: 1rem; border-radius: 0.5rem; font-size: 0.75rem;">
+dLat = (lat2-lat1)
+a = sin²(dLat/2) + cos(lat1)*cos(lat2)*sin²(dLon/2)
+dist = R * 2 * atan2(√a, √(1-a))</pre>
+                    <p style="font-size: 0.8rem; margin-top: 0.5rem;">Implemented in <code>StudentService.java</code> to ensure proximity validation.</p>
+                </div>
+                <div class="layer-card">
+                    <h4>Dynamic QR Tokenization</h4>
+                    <p>Tokens are UUID-based and transient, stored in <code>QrSession</code> entity with a <code>expiresAt</code> timestamp. Once expired, the backend rejects any <code>markAttendance</code> calls with that token.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer style="text-align: center; color: #94a3b8; padding: 2rem;">
+            Generated On: 2026-01-29 | System Version: CDAC Portal v2.0-Production
+        </footer>
+    </div>
+
+</body>
+</html>

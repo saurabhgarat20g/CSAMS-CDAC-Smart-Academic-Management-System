@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Presentation - CDAC Management Portal</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true, theme: 'dark' });</script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono&display=swap');
+
+        :root {
+            --primary: #0f172a;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+            --bg-dark: #020617;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass: rgba(15, 23, 42, 0.7);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .presentation-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4rem;
+            opacity: 0;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateX(100px) scale(0.95);
+            pointer-events: none;
+            background: radial-gradient(circle at center, #1e293b 0%, #020617 100%);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+            pointer-events: all;
+        }
+
+        /* Hero Slide Background */
+        .hero-slide {
+            background-image: linear-gradient(rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.8)), url('C:/Users/Dell/.gemini/antigravity/brain/70cc08b1-a9d1-4e29-94c8-0f722dc318d4/project_presentation_hero_1769770717062.png');
+            background-size: cover;
+            background-position: center;
+        }
+
+        h1 { font-size: 5rem; font-weight: 700; background: linear-gradient(to right, #60a5fa, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem; }
+        h2 { font-size: 3rem; color: var(--accent); margin-bottom: 2rem; }
+        p { font-size: 1.5rem; max-width: 800px; text-align: center; color: var(--text-muted); line-height: 1.5; }
+
+        .content-box {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 2rem;
+            max-width: 1100px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            width: 100%;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 1.5rem;
+            transition: all 0.3s;
+        }
+        .card:hover { border-color: var(--accent); transform: translateY(-5px); box-shadow: 0 0 30px var(--accent-glow); }
+        .card h3 { font-size: 1.5rem; color: var(--accent); margin-bottom: 1rem; }
+        .card li { list-style: none; margin-bottom: 0.5rem; color: var(--text-muted); }
+
+        .controls {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            gap: 1rem;
+            z-index: 1000;
+        }
+
+        button {
+            background: var(--glass);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: 0.3s;
+            font-weight: 600;
+        }
+        button:hover { background: var(--accent); border-color: var(--accent); }
+
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--accent);
+            z-index: 1001;
+            transition: width 0.3s ease;
+        }
+
+        .slide-number {
+            position: fixed;
+            bottom: 2rem;
+            left: 2rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .diagram-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in { animation: fadeInUp 0.8s forwards; }
+
+    </style>
+</head>
+<body>
+
+    <div class="progress-bar" id="progressBar"></div>
+    <div class="slide-number" id="slideNumber">1 / 10</div>
+
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active hero-slide">
+            <h1 class="animate-fade-in">CDAC Management Portal</h1>
+            <p class="animate-fade-in">A Next-Gen Full-Stack Gateway for Academic Excellence & Secure Attendance</p>
+            <div style="margin-top: 3rem;" class="animate-fade-in">
+                <p style="font-size: 1rem; letter-spacing: 2px;">PRESENTED BY OUR TEAM</p>
+            </div>
+        </div>
+
+        <!-- Slide 2: Motivation -->
+        <div class="slide">
+            <h2>The Challenge</h2>
+            <div class="content-box">
+                <div class="grid">
+                    <div class="card">
+                        <h3>Manual Errors</h3>
+                        <p style="font-size: 1.1rem; text-align: left;">Paper-based attendance is prone to human error and data entry fatigue.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Proxy Attendance</h3>
+                        <p style="font-size: 1.1rem; text-align: left;">Students marking attendance for friends who are not physically present.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Lack of Insights</h3>
+                        <p style="font-size: 1.1rem; text-align: left;">Admins cannot easily analyze real-time attendance trends or academic progress.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: The Solution -->
+        <div class="slide">
+            <h2>The Solution</h2>
+            <div class="content-box">
+                <p style="margin-bottom: 2rem;">An integrated digital ecosystem that combines biometric security with real-time location tracking.</p>
+                <div class="grid">
+                    <div class="card">
+                        <h3>Biometric Trust</h3>
+                        <p style="font-size: 1rem; text-align: left;">FIDO2/WebAuthn standard for cryptographic fingerprint verification.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Geofenced Safety</h3>
+                        <p style="font-size: 1rem; text-align: left;">Ensures attendance is only marked within the authorized campus radius.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Dynamic QR</h3>
+                        <p style="font-size: 1rem; text-align: left;">Time-sensitive session tokens that expire to prevent misuse.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Technology Stack -->
+        <div class="slide">
+            <h2>Modern Architecture</h2>
+            <div class="content-box">
+                <div class="grid">
+                    <div class="card">
+                        <h3>Backend</h3>
+                        <ul>
+                            <li>Spring Boot 3.2</li>
+                            <li>Spring Security & JPA</li>
+                            <li>MySQL (Relational DB)</li>
+                            <li>Apache POI (Excel)</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>Frontend</h3>
+                        <ul>
+                            <li>React 18 & Vite</li>
+                            <li>Tailwind CSS</li>
+                            <li>Shadcn/UI Components</li>
+                            <li>Context API / Axios</li>
+                        </ul>
+                    </div>
+                    <div class="card">
+                        <h3>Security</h3>
+                        <ul>
+                            <li>JWT (Stateless Auth)</li>
+                            <li>WebAuthn (Biometrics)</li>
+                            <li>Haversine Geolocation</li>
+                            <li>SSL/TLS Encryption</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Feature: Dynamic QR -->
+        <div class="slide">
+            <h2>Dynamic QR System</h2>
+            <div class="content-box">
+                <div class="grid" style="grid-template-columns: 1fr 1.5fr;">
+                    <div>
+                        <ul style="text-align: left; padding: 1rem;">
+                            <li style="margin-bottom: 1rem;">✅ <strong>UUID Generation:</strong> Unique cryptographically strong tokens.</li>
+                            <li style="margin-bottom: 1rem;">✅ <strong>Expiry Logic:</strong> Faculty controls session duration (10-60 mins).</li>
+                            <li style="margin-bottom: 1rem;">✅ <strong>Atomic Logs:</strong> Real-time DB sync between Faculty and Student dashboards.</li>
+                        </ul>
+                    </div>
+                    <div class="diagram-container">
+                        <div class="mermaid">
+                            sequenceDiagram
+                                Faculty->>Backend: Generate QR Token
+                                Backend->>DB: Save Session (Expires in T)
+                                Faculty->>Student: Shows QR Code
+                                Student->>Backend: Scans & Submits Token
+                                Backend->>DB: Record Present
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 6: Feature: Biometric Security -->
+        <div class="slide">
+            <h2>Biometric (FIDO2) Privacy</h2>
+            <div class="content-box">
+                <div class="grid">
+                    <div class="card" style="border-left: 5px solid #10b981;">
+                        <h3>What we DO NOT store</h3>
+                        <p style="font-size: 1rem; text-align: left; color: #ef4444;">No Fingerprint Images. No Biometric Templates. Privacy is guaranteed by hardware.</p>
+                    </div>
+                    <div class="card" style="border-left: 5px solid #3b82f6;">
+                        <h3>What we DO store</h3>
+                        <p style="font-size: 1rem; text-align: left; color: #60a5fa;">Public Keys and Credential IDs used for cryptographic signature verification.</p>
+                    </div>
+                </div>
+                <p style="margin-top: 2rem; font-size: 1rem;">Complies with modern FIDO2 standards, making the portal virtually unhackable via traditional replay attacks.</p>
+            </div>
+        </div>
+
+        <!-- Slide 7: Feature: Geofencing -->
+        <div class="slide">
+            <h2>Geofencing & Validation</h2>
+            <div class="content-box">
+                <div class="diagram-container">
+                    <div class="mermaid">
+                        graph LR
+                            User[Student Phone] -- "GPS Coords" --> Server[Spring Boot Backend]
+                            Server -- "Check Radius" --> Valid{Within 200m?}
+                            Valid -- Yes --> Mark[Mark Attended]
+                            Valid -- No --> Reject[Access Denied]
+                            style Valid fill:#3b82f6,stroke:#fff,color:#fff
+                    </div>
+                </div>
+                <p style="margin-top: 2rem;">Using the <strong>Haversine Formula</strong>, the system calculates the exact distance between the student's phone and the college's geo-coordinates.</p>
+            </div>
+        </div>
+
+        <!-- Slide 8: Bulk Management -->
+        <div class="slide">
+            <h2>Scalability: Bulk Management</h2>
+            <div class="content-box">
+                <div class="grid">
+                    <div class="card">
+                        <h3>Excel Intake</h3>
+                        <p style="font-size: 1rem; text-align: left;">Admins can upload 500+ students in a single click using processed Excel templates.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Auto-Generation</h3>
+                        <p style="font-size: 1rem; text-align: left;">System auto-generates temporary passwords and emails based on PRN records.</p>
+                    </div>
+                    <div class="card">
+                        <h3>Result Analytics</h3>
+                        <p style="font-size: 1rem; text-align: left;">Unified dashboard for tracking academic scores across all subjects.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 9: Architecture Flow -->
+        <div class="slide">
+            <h2>Global Interaction Flow</h2>
+            <div class="content-box">
+                <div class="diagram-container" style="background: white; border-radius: 1rem; padding: 1rem;">
+                    <div class="mermaid">
+                        graph TD
+                            Client[React UI] -->|JWT Auth| API[REST Controllers]
+                            API -->|Auth/RBAC| Security[Spring Security]
+                            Security -->|Service Logic| Services[Business Layer]
+                            Services -->|SQL/JPA| DB[(MySQL)]
+                            DB -->|Entity| Services
+                            Services -->|DTO| Client
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 10: Conclusion -->
+        <div class="slide">
+            <h1>Thank You!</h1>
+            <p>The CDAC Management Portal is a testament to secure, scalable, and user-centric software engineering.</p>
+            <div style="margin-top: 4rem;">
+                <button onclick="changeSlide(0)">RESTART</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="prevBtn" onclick="prevSlide()">PREV</button>
+        <button id="nextBtn" onclick="nextSlide()">NEXT</button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progressBar');
+        const slideNumber = document.getElementById('slideNumber');
+        let currentSlide = 0;
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.toggle('active', index === currentSlide);
+            });
+            const progress = ((currentSlide + 1) / slides.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            slideNumber.textContent = `${currentSlide + 1} / ${slides.length}`;
+            
+            // Re-render mermaid if needed
+            if (window.mermaid) {
+                mermaid.init(undefined, ".mermaid");
+            }
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        function changeSlide(index) {
+            currentSlide = index;
+            updateSlide();
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        updateSlide();
+    </script>
+</body>
+</html>
