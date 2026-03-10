@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CDAC Management Portal
 
 ## Overview
@@ -94,3 +95,6 @@ A full-stack web application for managing Student Attendance using QR Codes, cre
 ### Student
 - `POST /api/student/attendance/mark` - Mark attendance with token
 - `POST /api/student/leave/apply` - Apply for leave
+=======
+# CSAMS-CDAC-Smart-Academic-Management-System
+>>>>>>> bc92345caf93dc5b4a1af51775e9cb763de38f61
